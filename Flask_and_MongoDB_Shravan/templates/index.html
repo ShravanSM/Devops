@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form</title>
+</head>
+<body>
+
+    <h1>Submit Data</h1>
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <form action="/submit" method="POST">
+        <label for="name">Name</label>
+        <input type="text" name="name" placeholder="Enter your Name" ><br><br>
+        <label for="age">Age</label>
+        <input type="number" name="age" placeholder="Enter the Age" ><br><br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
