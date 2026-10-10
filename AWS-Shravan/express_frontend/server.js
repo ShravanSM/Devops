@@ -1,26 +1,29 @@
-
 const express = require("express");
 
 const app = express();
 const PORT = 3000;
-const FLASK_API = "http://127.0.0.1:5000";
+const FLASK_API = "http://172.31.19.79:5000";
 
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", async (req, res) => {
-    try {
-        const response = await fetch(`${FLASK_API}/students`);
-        const students = await response.json();
+  try {
+    const response = await fetch(`${FLASK_API}/students`);
+    const students = await response.json();
 
-        const studentRows = students.map(student => `
+    const studentRows = students
+      .map(
+        (student) => `
             <tr>
                 <td>${student.id}</td>
                 <td>${student.name}</td>
                 <td>${student.course}</td>
             </tr>
-        `).join("");
+        `,
+      )
+      .join("");
 
-        res.send(`
+    res.send(`
             <!DOCTYPE html>
             <html>
             <head>
@@ -83,36 +86,34 @@ app.get("/", async (req, res) => {
             </body>
             </html>
         `);
-    } catch (error) {
-        res.status(502).send(
-            "Cannot connect to Flask backend. Check whether Flask is running."
-        );
-    }
+  } catch (error) {
+    res
+      .status(502)
+      .send("Cannot connect to Flask backend. Check whether Flask is running.");
+  }
 });
 
 app.post("/add-student", async (req, res) => {
-    try {
-        const response = await fetch(`${FLASK_API}/students`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                name: req.body.name,
-                course: req.body.course
-            })
-        });
+  try {
+    const response = await fetch(`${FLASK_API}/students`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: req.body.name,
+        course: req.body.course,
+      }),
+    });
 
-        if (!response.ok) {
-            return res.status(response.status).send(
-                "Could not add student."
-            );
-        }
-
-        res.redirect("/");
-    } catch (error) {
-        res.status(502).send("Cannot connect to Flask backend.");
+    if (!response.ok) {
+      return res.status(response.status).send("Could not add student.");
     }
+
+    res.redirect("/");
+  } catch (error) {
+    res.status(502).send("Cannot connect to Flask backend.");
+  }
 });
 
 app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Express frontend running on port ${PORT}`);
+  console.log(`Express frontend running on port ${PORT}`);
 });
