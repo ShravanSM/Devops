@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: express-frontend
+  template:
+    metadata:
+      labels:
+        app: express-frontend
+    spec:
+      containers:
+        - name: express-frontend
+          image: express-frontend:1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
+          env:
+            - name: FLASK_API
+              value: "http://flask-service:5000"
