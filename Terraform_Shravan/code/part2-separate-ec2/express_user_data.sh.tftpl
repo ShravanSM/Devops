@@ -1,0 +1,31 @@
+#!/bin/bash
+set -euxo pipefail
+
+dnf update -y
+dnf install -y nodejs
+
+mkdir -p /opt/assignment/express
+
+echo '${express_app_b64}' | base64 -d > /opt/assignment/express/app.js
+echo '${express_pkg_b64}' | base64 -d > /opt/assignment/express/package.json
+
+cd /opt/assignment/express
+npm install --omit=dev
+
+cat >/etc/systemd/system/assignment-express.service <<EOF
+[Unit]
+Description=Assignment Express Demo
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/assignment/express
+Environment="BACKEND_URL=http://${flask_private_ip}:5000"
+ExecStart=/usr/bin/node /opt/assignment/express/app.js
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable --now assignment-express

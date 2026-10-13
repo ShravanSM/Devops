@@ -1,0 +1,37 @@
+#!/bin/bash
+set -euxo pipefail
+dnf update -y
+dnf install -y python3 python3-pip nodejs
+mkdir -p /opt/assignment/flask /opt/assignment/express
+echo '${flask_app_b64}' | base64 -d > /opt/assignment/flask/app.py
+echo '${flask_req_b64}' | base64 -d > /opt/assignment/flask/requirements.txt
+echo '${express_app_b64}' | base64 -d > /opt/assignment/express/app.js
+echo '${express_pkg_b64}' | base64 -d > /opt/assignment/express/package.json
+python3 -m venv /opt/assignment/flask/venv
+/opt/assignment/flask/venv/bin/pip install -r /opt/assignment/flask/requirements.txt
+cd /opt/assignment/express && npm install --omit=dev
+cat >/etc/systemd/system/assignment-flask.service <<'EOF'
+[Unit]
+Description=Assignment Flask Demo
+After=network.target
+[Service]
+WorkingDirectory=/opt/assignment/flask
+ExecStart=/opt/assignment/flask/venv/bin/python /opt/assignment/flask/app.py
+Restart=always
+[Install]
+WantedBy=multi-user.target
+EOF
+cat >/etc/systemd/system/assignment-express.service <<'EOF'
+[Unit]
+Description=Assignment Express Demo
+After=network.target
+[Service]
+WorkingDirectory=/opt/assignment/express
+ExecStart=/usr/bin/node /opt/assignment/express/app.js
+Restart=always
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable --now assignment-flask
+systemctl enable --now assignment-express
